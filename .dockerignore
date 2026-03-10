@@ -1,0 +1,44 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 测试和示例
+examples/
+tests/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# 构建产物
+build/
+dist/
+*.egg-info/
+
+# 日志
+*.log
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# 脚本（可选，如果需要复制进去则注释掉）
+# scripts/

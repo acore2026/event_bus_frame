@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: event-bus-rabbitmq
+    ports:
+      - "5672:5672"     # AMQP 端口
+      - "15672:15672"   # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  event-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: event-bus-service
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASS: guest
+      RABBITMQ_VHOST: /
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    # 覆盖默认命令，根据实际需求修改
+    command: python main.py
+    # 如需持续运行，使用以下命令
+    # command: tail -f /dev/null
+
+volumes:
+  rabbitmq_data:

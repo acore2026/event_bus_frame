@@ -1,0 +1,6 @@
+__pycache__/main.cpython-312.pyc
+event_framework/__pycache__/*
+examples/__pycache__/*
+.vscode/launch.json
+uv.lock
+

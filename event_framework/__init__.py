@@ -5,7 +5,7 @@
 
 from .publisher import EventPublisher
 from .subscriber import EventSubscriber
-from .consumer import EventConsumer
+from .consumer import EventConsumer, ConsumerOptions, ConsumerMode
 from .event import Event, EventMetadata
 from .connection import ConnectionManager
 from .config import EventConfig
@@ -14,6 +14,8 @@ __all__ = [
     "EventPublisher",
     "EventSubscriber",
     "EventConsumer",
+    "ConsumerOptions",
+    "ConsumerMode",
     "Event",
     "EventMetadata",
     "ConnectionManager",

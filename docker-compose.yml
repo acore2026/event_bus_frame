@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  # Event Bus Server - Central hub
+  event-bus:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: event-bus-server
+    ports:
+      - "8000:8000"
+    environment:
+      - EVENT_BUS_HOST=0.0.0.0
+      - EVENT_BUS_PORT=8000
+      - EVENT_BUS_LOG_LEVEL=INFO
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8000/health').raise_for_status()"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - event-bus-network
+    restart: unless-stopped
+
+  # Order Service - Example publisher
+  order-service:
+    build:
+      context: .
+      dockerfile: examples/Dockerfile.service
+      args:
+        SERVICE_NAME: order-service
+        SERVICE_PORT: 8001
+        SERVICE_MODULE: examples.order_service
+    container_name: order-service
+    ports:
+      - "8001:8001"
+    environment:
+      - EVENT_CLIENT_SERVICE_NAME=order-service
+      - EVENT_CLIENT_SERVICE_URL=http://order-service:8001
+      - EVENT_CLIENT_EVENT_BUS_URL=http://event-bus:8000
+      - SERVICE_PORT=8001
+    depends_on:
+      event-bus:
+        condition: service_healthy
+    networks:
+      - event-bus-network
+    restart: unless-stopped
+
+  # Payment Service - Example consumer
+  payment-service:
+    build:
+      context: .
+      dockerfile: examples/Dockerfile.service
+      args:
+        SERVICE_NAME: payment-service
+        SERVICE_PORT: 8002
+        SERVICE_MODULE: examples.payment_service
+    container_name: payment-service
+    ports:
+      - "8002:8002"
+    environment:
+      - EVENT_CLIENT_SERVICE_NAME=payment-service
+      - EVENT_CLIENT_SERVICE_URL=http://payment-service:8002
+      - EVENT_CLIENT_EVENT_BUS_URL=http://event-bus:8000
+      - SERVICE_PORT=8002
+    depends_on:
+      event-bus:
+        condition: service_healthy
+    networks:
+      - event-bus-network
+    restart: unless-stopped
+
+  # Inventory Service - Example consumer
+  inventory-service:
+    build:
+      context: .
+      dockerfile: examples/Dockerfile.service
+      args:
+        SERVICE_NAME: inventory-service
+        SERVICE_PORT: 8003
+        SERVICE_MODULE: examples.inventory_service
+    container_name: inventory-service
+    ports:
+      - "8003:8003"
+    environment:
+      - EVENT_CLIENT_SERVICE_NAME=inventory-service
+      - EVENT_CLIENT_SERVICE_URL=http://inventory-service:8003
+      - EVENT_CLIENT_EVENT_BUS_URL=http://event-bus:8000
+      - SERVICE_PORT=8003
+    depends_on:
+      event-bus:
+        condition: service_healthy
+    networks:
+      - event-bus-network
+    restart: unless-stopped
+
+networks:
+  event-bus-network:
+    driver: bridge
